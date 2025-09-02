@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X, Plus, Minus, Trash2, ShoppingCart } from 'lucide-react-native';
 import { Colors } from '@/theme/colors';
 import { useCart } from '@/contexts/CartContext';
+import CustomizeItemSheet from './CustomizeItemSheet';
 
 interface CartSheetProps {
   visible: boolean;
@@ -14,6 +15,13 @@ interface CartSheetProps {
 export default function CartSheet({ visible, onClose, onAttachToTask }: CartSheetProps) {
   const insets = useSafeAreaInsets();
   const { cart, updateCartItem, removeFromCart, clearCart } = useCart();
+  const [showCustomizeSheet, setShowCustomizeSheet] = React.useState(false);
+  const [selectedItem, setSelectedItem] = React.useState(null);
+
+  const handleCustomizeClose = () => {
+    setShowCustomizeSheet(false);
+    setSelectedItem(null);
+  };
 
   const formatPrice = (cents: number): string => {
     return `$${(cents / 100).toFixed(2)}`;
