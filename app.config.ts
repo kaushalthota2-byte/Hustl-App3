@@ -9,7 +9,6 @@ export default (): ExpoConfig => ({
     icon: "./src/assets/images/icon.png",
     scheme: "myapp",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
     jsEngine: "jsc",
     ios: {
       supportsTablet: true,
@@ -27,9 +26,6 @@ export default (): ExpoConfig => ({
     },
     plugins: [
       "expo-router",
-      ["expo-maps", { 
-        googleMapsApiKey: "AIzaSyCrVIRCIog1gFNc_KFF669XaaebfdxUgn8"
-      }],
       ["expo-location", {
         locationAlwaysAndWhenInUseUsageDescription: "We use your location to show nearby tasks on the map."
       }]

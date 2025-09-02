@@ -3,17 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, MapPin } from 'lucide-react-native';
-// import Animated, { 
-//   useSharedValue, 
-//   useAnimatedStyle, 
-//   withSpring, 
-//   withDelay, 
-//   withTiming, 
-//   withRepeat,
-//   withSequence,
-//   interpolate,
-//   Easing
-// } from 'react-native-reanimated'; // Temporarily disabled for Expo Go
+// All animations disabled for Expo Go compatibility
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/theme/colors';
 
@@ -21,23 +11,9 @@ const { width, height } = Dimensions.get('window');
 
 // Glowing logo animation
 const GlowingLogo = () => {
-  // const glowOpacity = useSharedValue(0.3);
-  // const shimmerPosition = useSharedValue(-1);
-
   useEffect(() => {
-    // Animation temporarily disabled for Expo Go stability
+    // Animations disabled for Expo Go compatibility
   }, []);
-
-  // const animatedGlowStyle = useAnimatedStyle(() => ({
-  //   shadowOpacity: glowOpacity.value,
-  // }));
-
-  // const animatedShimmerStyle = useAnimatedStyle(() => {
-  //   const translateX = interpolate(shimmerPosition.value, [0, 1], [-120, 120]);
-  //   return {
-  //     transform: [{ translateX }],
-  //   };
-  // });
 
   return (
     <View style={styles.logoContainer}>
@@ -54,7 +30,6 @@ const GlowingLogo = () => {
 
 // University carousel component
 const UniversityCarousel = () => {
-  // const scrollX = useSharedValue(0);
   const universities = [
     { id: 'uf', name: 'UF', logo: require('../../assets/images/Florida_Gators_gator_logo.png') },
     { id: 'ucf', name: 'UCF', logo: require('../../assets/images/141-1415685_ucf-university-of-central-florida-logo.jpg') },
@@ -63,19 +38,8 @@ const UniversityCarousel = () => {
   ];
 
   useEffect(() => {
-    // Animation temporarily disabled for Expo Go stability
+    // Animations disabled for Expo Go compatibility
   }, []);
-
-  // const animatedStyle = useAnimatedStyle(() => {
-  //   const translateX = interpolate(
-  //     scrollX.value % (universities.length * 100),
-  //     [0, universities.length * 100],
-  //     [0, -universities.length * 100]
-  //   );
-  //   return {
-  //     transform: [{ translateX }],
-  //   };
-  // });
 
   return (
     <View style={styles.carouselContainer}>
@@ -100,52 +64,15 @@ const UniversityCarousel = () => {
   );
 };
 
-// Pulsing button animation
-// const PulsingButton = ({ children, onPress, style }: { 
-//   children: React.ReactNode; 
-//   onPress: () => void; 
-//   style?: any;
-// }) => {
-//   // Animation temporarily disabled for Expo Go stability
-//   return (
-//     <View style={style}>
-//       <TouchableOpacity onPress={onPress} activeOpacity={0.9}>
-//         {children}
-//       </TouchableOpacity>
-//     </View>
-//   );
-// };
-
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   
-  // Animation values - temporarily disabled for Expo Go stability
-  // const logoOpacity = useSharedValue(0);
-  // const logoScale = useSharedValue(0.8);
-  // const titleOpacity = useSharedValue(0);
-  // const titleTranslateY = useSharedValue(30);
-  // const contentOpacity = useSharedValue(0);
-  // const contentTranslateY = useSharedValue(40);
+  // Animations disabled for Expo Go compatibility
 
   useEffect(() => {
-    // Animations temporarily disabled for Expo Go stability
+    // Animations disabled for Expo Go compatibility
   }, []);
-
-  // const animatedLogoStyle = useAnimatedStyle(() => ({
-  //   opacity: logoOpacity.value,
-  //   transform: [{ scale: logoScale.value }],
-  // }));
-
-  // const animatedTitleStyle = useAnimatedStyle(() => ({
-  //   opacity: titleOpacity.value,
-  //   transform: [{ translateY: titleTranslateY.value }],
-  // }));
-
-  // const animatedContentStyle = useAnimatedStyle(() => ({
-  //   opacity: contentOpacity.value,
-  //   transform: [{ translateY: contentTranslateY.value }],
-  // }));
 
   const handleChooseCampus = () => {
     router.push('/(onboarding)/university-selection');

@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Image
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, ChevronRight, Lock } from 'lucide-react-native';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence, withSpring } from 'react-native-reanimated';
+// Reanimated disabled for Expo Go compatibility
+// import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSequence, withSpring } from 'react-native-reanimated';
 import { Colors } from '@/theme/colors';
 
 const { width } = Dimensions.get('window');
@@ -78,47 +79,10 @@ export default function UniversitySelection() {
   };
 
   const UniversityCardComponent = ({ university }: { university: UniversityCard }) => {
-    const scale = useSharedValue(1);
-    const logoTranslateX = useSharedValue(0);
-    const titleTranslateX = useSharedValue(0);
-    const arrowOpacity = useSharedValue(0);
-    const arrowScale = useSharedValue(0.8);
-
-    const animatedCardStyle = useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
-    }));
-
-    const animatedLogoStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: logoTranslateX.value }],
-    }));
-
-    const animatedTitleStyle = useAnimatedStyle(() => ({
-      transform: [{ translateX: titleTranslateX.value }],
-    }));
-
-    const animatedArrowStyle = useAnimatedStyle(() => ({
-      opacity: arrowOpacity.value,
-      transform: [{ scale: arrowScale.value }],
-    }));
-
-    const handlePressIn = () => {
-      if (!university.enabled) return;
-      scale.value = withTiming(0.98, { duration: 100 });
-    };
-
-    const handlePressOut = () => {
-      if (!university.enabled) return;
-      scale.value = withTiming(1, { duration: 100 });
-    };
+    // Animations disabled for Expo Go compatibility
 
     const handlePress = () => {
       if (!university.enabled) return;
-      
-      // Trigger selection animation
-      logoTranslateX.value = withTiming(-8, { duration: 250 });
-      titleTranslateX.value = withTiming(8, { duration: 250 });
-      arrowOpacity.value = withTiming(1, { duration: 250 });
-      arrowScale.value = withSpring(1, { damping: 15 });
       
       handleUniversitySelect(university);
     };
@@ -131,12 +95,10 @@ export default function UniversitySelection() {
     ];
 
     return (
-      <Animated.View style={animatedCardStyle}>
+      <View>
         <TouchableOpacity
           style={cardStyle}
           onPress={handlePress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
           disabled={!university.enabled}
           accessibilityLabel={
             university.enabled 
@@ -146,16 +108,16 @@ export default function UniversitySelection() {
           accessibilityRole="button"
           accessibilityState={{ disabled: !university.enabled }}
         >
-          <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
+          <View style={styles.logoContainer}>
             <Image
               source={university.logo}
               style={styles.universityLogo}
               resizeMode="contain"
             />
-          </Animated.View>
+          </View>
           
           <View style={styles.cardContent}>
-            <Animated.View style={animatedTitleStyle}>
+            <View>
               <Text style={[
                 styles.universityName,
                 !university.enabled && styles.disabledText
@@ -168,18 +130,18 @@ export default function UniversitySelection() {
                   <Text style={styles.comingSoonText}>Coming Soon</Text>
                 </View>
               )}
-            </Animated.View>
+            </View>
             
             {university.enabled && (
-              <Animated.View style={[styles.arrowContainer, animatedArrowStyle]}>
+              <View style={styles.arrowContainer}>
                 <View style={styles.arrowPill}>
                   <ChevronRight size={16} color={Colors.primary} strokeWidth={2.5} />
                 </View>
-              </Animated.View>
+              </View>
             )}
           </View>
         </TouchableOpacity>
-      </Animated.View>
+      </View>
     );
   };
 

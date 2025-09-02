@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet, Text, TouchableOpacity, Alert, Platform } from 'react-native';
-// import MapView, { Marker, PROVIDER_GOOGLE, Region, Callout } from 'expo-maps'; // Temporarily disabled for Expo Go
+// MapView disabled for Expo Go compatibility
+// import MapView, { Marker, PROVIDER_GOOGLE, Region, Callout } from 'expo-maps';
 import * as Location from 'expo-location';
 import { MapPin, Store, Navigation, Coffee, BookOpen, Dumbbell, Building } from 'lucide-react-native';
 import { Colors } from '@/theme/colors';

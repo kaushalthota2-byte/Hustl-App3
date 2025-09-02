@@ -5,17 +5,7 @@ import { useRouter } from 'expo-router';
 import { Car, Coffee, Dumbbell, BookOpen, Pizza, Plus, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
-// import Animated, { 
-//   useSharedValue, 
-//   useAnimatedStyle, 
-//   withRepeat, 
-//   withTiming, 
-//   withSequence,
-//   interpolate,
-//   withDelay,
-//   withSpring,
-//   Easing
-// } from 'react-native-reanimated'; // Temporarily disabled for Expo Go
+// All animations disabled for Expo Go compatibility
 import { ActivityIndicator } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -61,7 +51,7 @@ const categories = [
 
 // Floating Particles Component for subtle depth
 const FloatingParticles = () => {
-  // Particles animation temporarily disabled for Expo Go stability
+  // Animations disabled for Expo Go compatibility
   return null;
 };
 
@@ -78,30 +68,10 @@ const CategoryCard = ({
   onSelectTask: () => void;
   isSelecting: boolean;
 }) => {
-  // const scaleAnimation = useSharedValue(0.8);
-  // const opacityAnimation = useSharedValue(0);
-  // const translateY = useSharedValue(30);
-  // const shadowAnimation = useSharedValue(0);
-
   // Staggered entrance animation
   React.useEffect(() => {
-    // Animations temporarily disabled for Expo Go stability
+    // Animations disabled for Expo Go compatibility
   }, [index]);
-
-  // const animatedStyle = useAnimatedStyle(() => ({
-  //   transform: [
-  //     { scale: scaleAnimation.value },
-  //     { translateY: translateY.value }
-  //   ],
-  //   opacity: opacityAnimation.value,
-  // }));
-
-  // const animatedShadowStyle = useAnimatedStyle(() => {
-  //   const shadowOpacity = interpolate(shadowAnimation.value, [0, 1], [0, 0.15]);
-  //   return {
-  //     shadowOpacity,
-  //   };
-  // });
 
   return (
     <View style={styles.categoryCard}>

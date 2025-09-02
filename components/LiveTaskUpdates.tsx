@@ -2,12 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import { Bell } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  withSequence
-} from 'react-native-reanimated';
+// Reanimated disabled for Expo Go compatibility
+// import Animated, { useSharedValue, useAnimatedStyle, withSpring, withSequence } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/theme/colors';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +33,7 @@ export default function LiveTaskUpdates() {
   } | undefined>();
   
   const buttonRef = useRef<TouchableOpacity>(null);
-  const badgeScale = useSharedValue(0);
+  // Animations disabled for Expo Go compatibility
 
   useEffect(() => {
     if (!isGuest && user) {
@@ -50,11 +46,7 @@ export default function LiveTaskUpdates() {
 
   useEffect(() => {
     if (updates.filter(u => !u.read).length > 0) {
-      // Animate notification badge
-      badgeScale.value = withSequence(
-        withSpring(1.2, { damping: 10 }),
-        withSpring(1, { damping: 15 })
-      );
+      // Badge animation disabled for Expo Go compatibility
     }
   }, [updates]);
 
@@ -147,9 +139,7 @@ export default function LiveTaskUpdates() {
 
   const unreadCount = updates.filter(u => !u.read).length;
 
-  const badgeAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: badgeScale.value }],
-  }));
+  // Animations disabled for Expo Go compatibility
 
   if (isGuest || !user) {
     return null;
@@ -166,11 +156,11 @@ export default function LiveTaskUpdates() {
       >
         <Bell size={20} color={Colors.semantic.tabInactive} strokeWidth={2} />
         {unreadCount > 0 && (
-          <Animated.View style={[styles.badge, badgeAnimatedStyle]}>
+          <View style={styles.badge}>
             <Text style={styles.badgeText}>
               {unreadCount > 9 ? '9+' : unreadCount}
             </Text>
-          </Animated.View>
+          </View>
         )}
       </TouchableOpacity>
 
