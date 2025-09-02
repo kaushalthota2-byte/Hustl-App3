@@ -10,12 +10,13 @@ import type { MenuItem } from '@/types/restaurant';
 import CustomizeItemSheet from './CustomizeItemSheet';
 
 interface RestaurantMenuProps {
+  visible: boolean;
+  onClose: () => void;
   restaurantId: string;
-  onBack: () => void;
   onViewCart: () => void;
 }
 
-export default function RestaurantMenu({ restaurantId, onBack, onViewCart }: RestaurantMenuProps) {
+export default function RestaurantMenu({ visible, onClose, restaurantId, onViewCart }: RestaurantMenuProps) {
   const insets = useSafeAreaInsets();
   const { cart } = useCart();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
@@ -24,13 +25,7 @@ export default function RestaurantMenu({ restaurantId, onBack, onViewCart }: Res
   const restaurant = getRestaurantById(restaurantId);
 
   if (!restaurant) {
-    return (
-      <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Restaurant not found</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return null;
   }
 
   const formatPrice = (cents: number): string => {
@@ -51,78 +46,89 @@ export default function RestaurantMenu({ restaurantId, onBack, onViewCart }: Res
   const cartTotal = cart?.total || 0;
 
   return (
-    <>
-      <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <ArrowLeft size={24} color={Colors.semantic.bodyText} strokeWidth={2} />
-          </TouchableOpacity>
-          
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>{restaurant.name}</Text>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.overlay}>
+        <View style={[styles.sheet, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={onClose}>
+              <ArrowLeft size={24} color={Colors.semantic.bodyText} strokeWidth={2} />
+            </TouchableOpacity>
+            
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitle}>{restaurant.name}</Text>
+            </View>
+
+            {cartItemCount > 0 && (
+              <TouchableOpacity style={styles.cartButton} onPress={onViewCart}>
+                <View style={styles.cartIcon}>
+                  <ShoppingCart size={16} color={Colors.white} strokeWidth={2} />
+                  <View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
+                  </View>
+                </View>
+                <Text style={styles.cartTotal}>{formatPrice(cartTotal)}</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {cartItemCount > 0 && (
-            <TouchableOpacity style={styles.cartButton} onPress={onViewCart}>
-              <View style={styles.cartIcon}>
-                <ShoppingCart size={16} color={Colors.white} strokeWidth={2} />
-                <View style={styles.cartBadge}>
-                  <Text style={styles.cartBadgeText}>{cartItemCount}</Text>
+          {/* Menu */}
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {restaurant.categories.map((category) => (
+              <View key={category.id} style={styles.categorySection}>
+                <Text style={styles.categoryTitle}>{category.name}</Text>
+                
+                <View style={styles.itemsList}>
+                  {category.items.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={styles.menuItem}
+                      onPress={() => handleItemPress(item)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.itemInfo}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemDescription} numberOfLines={2}>
+                          {item.description}
+                        </Text>
+                        <Text style={styles.itemPrice}>
+                          {formatPrice(Math.round(item.basePrice * 100))}
+                        </Text>
+                      </View>
+                      
+                      <View style={styles.addButton}>
+                        <Text style={styles.addButtonText}>Customize & Add</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               </View>
-              <Text style={styles.cartTotal}>{formatPrice(cartTotal)}</Text>
-            </TouchableOpacity>
-          )}
+            ))}
+          </ScrollView>
+
+          {/* Customize Item Sheet */}
+          <CustomizeItemSheet
+            visible={showCustomizeSheet}
+            onClose={handleCustomizeClose}
+            menuItem={selectedItem}
+          />
         </View>
-
-        {/* Menu */}
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {restaurant.categories.map((category) => (
-            <View key={category.id} style={styles.categorySection}>
-              <Text style={styles.categoryTitle}>{category.name}</Text>
-              
-              <View style={styles.itemsList}>
-                {category.items.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={styles.menuItem}
-                    onPress={() => handleItemPress(item)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.itemInfo}>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      <Text style={styles.itemDescription} numberOfLines={2}>
-                        {item.description}
-                      </Text>
-                      <Text style={styles.itemPrice}>
-                        {formatPrice(Math.round(item.basePrice * 100))}
-                      </Text>
-                    </View>
-                    
-                    <View style={styles.addButton}>
-                      <Text style={styles.addButtonText}>Customize & Add</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </SafeAreaView>
-
-      {/* Customize Item Sheet */}
-      <CustomizeItemSheet
-        visible={showCustomizeSheet}
-        onClose={handleCustomizeClose}
-        menuItem={selectedItem}
-      />
-    </>
+      </View>
+    </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  sheet: {
     flex: 1,
     backgroundColor: Colors.semantic.screen,
   },
@@ -255,16 +261,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: Colors.white,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  errorText: {
-    fontSize: 18,
-    color: Colors.semantic.errorAlert,
-    textAlign: 'center',
   },
 });

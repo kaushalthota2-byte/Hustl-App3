@@ -15,6 +15,11 @@ import TaskSuccessSheet from '@/components/TaskSuccessSheet';
 import Toast from '@/components/Toast';
 import StickyFormFooter from '@/components/StickyFormFooter';
 import CampusLocationPicker from '@/components/CampusLocationPicker';
+import RestaurantSelector from '@/components/RestaurantSelector';
+import RestaurantMenu from '@/components/RestaurantMenu';
+import CartSheet from '@/components/CartSheet';
+import { useCart } from '@/contexts/CartContext';
+import type { OrderSummary } from '@/types/restaurant';
 
 // Extended categories to support all card types
 const categories: { value: string; label: string }[] = [
@@ -104,6 +109,14 @@ export default function PostScreen() {
   const [estimatedMinutes, setEstimatedMinutes] = useState('');
   const [prefilledCategory, setPrefilledCategory] = useState<string | null>(null);
   
+  // Restaurant & Cart state
+  const [showRestaurantSelector, setShowRestaurantSelector] = useState(false);
+  const [showRestaurantMenu, setShowRestaurantMenu] = useState(false);
+  const [showCartSheet, setShowCartSheet] = useState(false);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(null);
+  const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
+  const { cart, setRestaurant, hasCartConflict, clearCart, getOrderSummary } = useCart();
+  
   // Computed pricing
   const [computedPriceCents, setComputedPriceCents] = useState(BASE_PRICE_CENTS + 100); // Base + medium urgency
   
@@ -152,8 +165,24 @@ export default function PostScreen() {
         message: `Prefilled from ${categoryLabel}`,
         type: 'success'
       });
+      
+      // Clear cart if category is not food
+      if (categoryParam !== 'food') {
+        clearCart();
+        setOrderSummary(null);
+        setSelectedRestaurantId(null);
+      }
     }
   }, [params.category, prefilledCategory]);
+
+  // Clear cart when category changes away from food
+  useEffect(() => {
+    if (category && category !== 'food') {
+      clearCart();
+      setOrderSummary(null);
+      setSelectedRestaurantId(null);
+    }
+  }, [category]);
 
   // Calculate price whenever urgency changes
   useEffect(() => {
@@ -234,6 +263,76 @@ export default function PostScreen() {
     return hasAllValues && !hasErrors && !isLoading;
   };
 
+  const handleStorePress = () => {
+    if (category === 'food') {
+      setShowRestaurantSelector(true);
+    }
+  };
+
+  const handleRestaurantSelect = (restaurantId: string) => {
+    if (hasCartConflict(restaurantId)) {
+      Alert.alert(
+        'Start a new cart?',
+        'You have items from another restaurant. Starting a new cart will clear your current items.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Start New Cart', 
+            style: 'destructive',
+            onPress: () => {
+              clearCart();
+              setOrderSummary(null);
+              proceedWithRestaurant(restaurantId);
+            }
+          }
+        ]
+      );
+    } else {
+      proceedWithRestaurant(restaurantId);
+    }
+  };
+
+  const proceedWithRestaurant = (restaurantId: string) => {
+    const success = setRestaurant(restaurantId);
+    if (success) {
+      setSelectedRestaurantId(restaurantId);
+      setShowRestaurantMenu(true);
+    }
+  };
+
+  const handleOtherRestaurant = () => {
+    clearCart();
+    setOrderSummary(null);
+    setSelectedRestaurantId(null);
+    setStore('');
+    updateFieldError('store', '');
+  };
+
+  const handleMenuBack = () => {
+    setShowRestaurantMenu(false);
+  };
+
+  const handleViewCart = () => {
+    setShowCartSheet(true);
+  };
+
+  const handleCartAttach = () => {
+    const summary = getOrderSummary();
+    if (summary) {
+      setOrderSummary(summary);
+      setStore(summary.restaurantName);
+      updateFieldError('store', summary.restaurantName);
+    }
+    setShowCartSheet(false);
+    setShowRestaurantMenu(false);
+  };
+
+  const handleEditItems = () => {
+    if (selectedRestaurantId) {
+      setShowRestaurantMenu(true);
+    }
+  };
+
   const handleSubmit = async () => {
     triggerHaptics();
 
@@ -282,6 +381,7 @@ export default function PostScreen() {
         urgency: urgency as TaskUrgency,
         estimated_minutes: Number(estimatedMinutes),
         reward_cents: computedPriceCents,
+        order_data: orderSummary ? JSON.stringify(orderSummary) : null,
       };
 
       const { data, error: createError } = await TaskRepo.createTask(taskData, user.id);
@@ -526,18 +626,89 @@ export default function PostScreen() {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Store *</Text>
-                <CampusLocationPicker
-                  value={store}
-                  onLocationSelect={(location) => {
-                    setStore(location);
-                    updateFieldError('store', location);
-                  }}
-                  placeholder="Select store or enter manually..."
-                />
+                {category === 'food' ? (
+                  <TouchableOpacity
+                    style={[styles.storeSelector, fieldErrors.store && styles.inputError]}
+                    onPress={handleStorePress}
+                  >
+                    <Store size={20} color={Colors.semantic.tabInactive} strokeWidth={2} />
+                    <Text style={[
+                      styles.storeSelectorText,
+                      !store && styles.storeSelectorPlaceholder
+                    ]}>
+                      {store || 'Select restaurant...'}
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <CampusLocationPicker
+                    value={store}
+                    onLocationSelect={(location) => {
+                      setStore(location);
+                      updateFieldError('store', location);
+                    }}
+                    placeholder="Select store or enter manually..."
+                  />
+                )}
                 {fieldErrors.store && (
                   <Text style={styles.fieldError}>{fieldErrors.store}</Text>
                 )}
               </View>
+
+              {/* Order Summary */}
+              {orderSummary && category === 'food' && (
+                <View style={styles.orderSummaryCard}>
+                  <View style={styles.orderSummaryHeader}>
+                    <Text style={styles.orderSummaryTitle}>Order Summary</Text>
+                    <TouchableOpacity onPress={handleEditItems}>
+                      <Text style={styles.editItemsText}>Edit Items</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <Text style={styles.restaurantName}>{orderSummary.restaurantName}</Text>
+                  
+                  <View style={styles.orderItems}>
+                    {orderSummary.items.map((item, index) => (
+                      <View key={index} style={styles.orderItem}>
+                        <Text style={styles.orderItemName}>
+                          {item.quantity}× {item.name}
+                        </Text>
+                        {item.selectedOptions.length > 0 && (
+                          <Text style={styles.orderItemOptions}>
+                            {item.selectedOptions.join(', ')}
+                          </Text>
+                        )}
+                        {item.notes && (
+                          <Text style={styles.orderItemNotes}>Note: {item.notes}</Text>
+                        )}
+                        <Text style={styles.orderItemPrice}>
+                          {formatPrice(item.lineTotal)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                  
+                  <View style={styles.orderTotals}>
+                    <View style={styles.orderTotalRow}>
+                      <Text style={styles.orderTotalLabel}>Subtotal</Text>
+                      <Text style={styles.orderTotalValue}>
+                        {formatPrice(orderSummary.totals.subtotal)}
+                      </Text>
+                    </View>
+                    <View style={styles.orderTotalRow}>
+                      <Text style={styles.orderTotalLabel}>Tax</Text>
+                      <Text style={styles.orderTotalValue}>
+                        {formatPrice(orderSummary.totals.tax)}
+                      </Text>
+                    </View>
+                    <View style={[styles.orderTotalRow, styles.orderTotalFinal]}>
+                      <Text style={styles.orderTotalFinalLabel}>Total</Text>
+                      <Text style={styles.orderTotalFinalValue}>
+                        {formatPrice(orderSummary.totals.total)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Drop-off Section */}
@@ -643,6 +814,31 @@ export default function PostScreen() {
         visible={showSuccessSheet}
         onClose={() => setShowSuccessSheet(false)}
         taskId={lastCreatedTaskId}
+      />
+
+      {/* Restaurant Selector */}
+      <RestaurantSelector
+        visible={showRestaurantSelector}
+        onClose={() => setShowRestaurantSelector(false)}
+        onSelectRestaurant={handleRestaurantSelect}
+        onSelectOther={handleOtherRestaurant}
+      />
+
+      {/* Restaurant Menu */}
+      {selectedRestaurantId && (
+        <RestaurantMenu
+          visible={showRestaurantMenu}
+          onClose={handleMenuBack}
+          restaurantId={selectedRestaurantId}
+          onViewCart={handleViewCart}
+        />
+      )}
+
+      {/* Cart Sheet */}
+      <CartSheet
+        visible={showCartSheet}
+        onClose={() => setShowCartSheet(false)}
+        onAttachToTask={handleCartAttach}
       />
 
       {/* Toast */}
@@ -852,5 +1048,126 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.primary,
     letterSpacing: 0.2,
+  },
+  storeSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    gap: 16,
+    minHeight: 56,
+    backgroundColor: Colors.semantic.inputBackground,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
+  storeSelectorText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.semantic.inputText,
+    fontWeight: '500',
+  },
+  storeSelectorPlaceholder: {
+    color: Colors.semantic.tabInactive,
+  },
+  orderSummaryCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  orderSummaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  orderSummaryTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.semantic.headingText,
+  },
+  editItemsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  restaurantName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.semantic.bodyText,
+    marginBottom: 16,
+  },
+  orderItems: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  orderItem: {
+    gap: 4,
+  },
+  orderItemName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.semantic.bodyText,
+  },
+  orderItemOptions: {
+    fontSize: 13,
+    color: Colors.semantic.tabInactive,
+    fontWeight: '500',
+  },
+  orderItemNotes: {
+    fontSize: 13,
+    color: Colors.semantic.tabInactive,
+    fontStyle: 'italic',
+  },
+  orderItemPrice: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.secondary,
+  },
+  orderTotals: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.semantic.dividerLight,
+    paddingTop: 16,
+    gap: 8,
+  },
+  orderTotalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  orderTotalLabel: {
+    fontSize: 14,
+    color: Colors.semantic.tabInactive,
+    fontWeight: '500',
+  },
+  orderTotalValue: {
+    fontSize: 14,
+    color: Colors.semantic.bodyText,
+    fontWeight: '600',
+  },
+  orderTotalFinal: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.semantic.dividerLight,
+    paddingTop: 8,
+    marginTop: 8,
+  },
+  orderTotalFinalLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.semantic.bodyText,
+  },
+  orderTotalFinalValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.primary,
   },
 });

@@ -33,6 +33,7 @@ export interface CreateTaskData {
   urgency: TaskUrgency;
   reward_cents: number;
   estimated_minutes: number;
+  order_data?: string | null;
 }
 
 export interface UpdateTaskData {
