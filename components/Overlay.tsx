@@ -8,12 +8,6 @@ import {
   KeyboardAvoidingView, 
   Platform 
 } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  runOnJS 
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '@/theme/colors';
 
@@ -34,8 +28,6 @@ interface OverlayProps {
   disableBackgroundScroll?: boolean;
 }
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-
 export default function Overlay({
   visible,
   onClose,
@@ -46,32 +38,6 @@ export default function Overlay({
   disableBackgroundScroll = true
 }: OverlayProps) {
   const insets = useSafeAreaInsets();
-  const backdropOpacity = useSharedValue(0);
-  const contentOpacity = useSharedValue(0);
-  const contentScale = useSharedValue(0.95);
-
-  const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-
-  const contentAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: contentOpacity.value,
-    transform: [{ scale: contentScale.value }],
-  }));
-
-  useEffect(() => {
-    if (visible) {
-      // Show animations
-      backdropOpacity.value = withTiming(1, { duration: 200 });
-      contentOpacity.value = withTiming(1, { duration: 250 });
-      contentScale.value = withTiming(1, { duration: 250 });
-    } else {
-      // Hide animations
-      backdropOpacity.value = withTiming(0, { duration: 150 });
-      contentOpacity.value = withTiming(0, { duration: 150 });
-      contentScale.value = withTiming(0.95, { duration: 150 });
-    }
-  }, [visible]);
 
   const handleBackdropPress = () => {
     onClose();
@@ -134,23 +100,22 @@ export default function Overlay({
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {/* Backdrop */}
-        <AnimatedTouchableOpacity
-          style={[styles.backdrop, backdropAnimatedStyle]}
+        <TouchableOpacity
+          style={styles.backdrop}
           onPress={handleBackdropPress}
           activeOpacity={1}
         />
 
         {/* Content Container */}
         <View style={[styles.contentContainer, getContentPosition()]}>
-          <Animated.View style={[
+          <View style={[
             styles.content,
-            contentAnimatedStyle,
             { maxHeight: maxHeight - insets.top - insets.bottom }
           ]}>
             <TouchableOpacity activeOpacity={1}>
               {children}
             </TouchableOpacity>
-          </Animated.View>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>

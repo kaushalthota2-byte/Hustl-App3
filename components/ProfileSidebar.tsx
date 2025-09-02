@@ -14,13 +14,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { X, User, Star, FileText, History, MessageSquare, Gift, Settings, CircleHelp as HelpCircle, MessageCircle, LogOut, ChevronRight, Shield, CreditCard } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  withSpring,
-  runOnJS
-} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '@/theme/colors';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,17 +32,11 @@ interface MenuItem {
   color?: string;
 }
 
-const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-
 export default function ProfileSidebar({ visible, onClose }: ProfileSidebarProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user, logout, isGuest } = useAuth();
   
-  // Animation values
-  const overlayOpacity = useSharedValue(0);
-  const sidebarTranslateX = useSharedValue(-width);
-
   // Menu items with user context
   const getMenuItems = (): MenuItem[] => [
     { 
@@ -98,26 +85,6 @@ export default function ProfileSidebar({ visible, onClose }: ProfileSidebarProps
       route: '/profile/help' // For now, redirect to help
     },
   ];
-
-  const overlayAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: overlayOpacity.value,
-  }));
-
-  const sidebarAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: sidebarTranslateX.value }],
-  }));
-
-  useEffect(() => {
-    if (visible) {
-      // Show animations
-      overlayOpacity.value = withTiming(1, { duration: 300 });
-      sidebarTranslateX.value = withSpring(0, { damping: 20, stiffness: 300 });
-    } else {
-      // Hide animations
-      overlayOpacity.value = withTiming(0, { duration: 200 });
-      sidebarTranslateX.value = withTiming(-width, { duration: 250 });
-    }
-  }, [visible]);
 
   const triggerHaptics = () => {
     if (Platform.OS !== 'web') {
@@ -197,14 +164,14 @@ export default function ProfileSidebar({ visible, onClose }: ProfileSidebarProps
     >
       <View style={styles.container}>
         {/* Overlay */}
-        <AnimatedTouchableOpacity
-          style={[styles.overlay, overlayAnimatedStyle]}
+        <TouchableOpacity
+          style={styles.overlay}
           onPress={handleOverlayPress}
           activeOpacity={1}
         />
 
         {/* Sidebar */}
-        <Animated.View style={[styles.sidebar, sidebarAnimatedStyle, { paddingTop: insets.top }]}>
+        <View style={[styles.sidebar, { paddingTop: insets.top }]}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
@@ -310,7 +277,7 @@ export default function ProfileSidebar({ visible, onClose }: ProfileSidebarProps
               </Text>
             </View>
           </ScrollView>
-        </Animated.View>
+        </View>
       </View>
     </Modal>
   );
