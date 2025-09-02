@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Car, Coffee, Dumbbell, BookOpen, Pizza, Plus } from 'lucide-react-native';
+import { Car, Coffee, Dumbbell, BookOpen, Pizza, Plus, X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 // import Animated, { 
@@ -65,90 +65,6 @@ const FloatingParticles = () => {
   return null;
 };
 
-// Enhanced Referral Banner with Gradient and Glow
-const AnimatedReferralsBanner = () => {
-  const router = useRouter();
-  // const glowAnimation = useSharedValue(0);
-  // const pulseAnimation = useSharedValue(1);
-  // const shimmerAnimation = useSharedValue(-1);
-
-  React.useEffect(() => {
-    // Animations temporarily disabled for Expo Go stability
-  }, []);
-
-  // const animatedGlowStyle = useAnimatedStyle(() => {
-  //   const shadowOpacity = interpolate(glowAnimation.value, [0, 1], [0.2, 0.4]);
-  //   return {
-  //     shadowOpacity,
-  //   };
-  // });
-
-  // const animatedPulseStyle = useAnimatedStyle(() => ({
-  //   transform: [{ scale: pulseAnimation.value }],
-  // }));
-
-  // const animatedShimmerStyle = useAnimatedStyle(() => {
-  //   const translateX = interpolate(shimmerAnimation.value, [0, 1], [-120, 320]);
-  //   return {
-  //     transform: [{ translateX }],
-  //   };
-  // });
-
-  const handleInvitePress = () => {
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      } catch (error) {
-        // Haptics not available, continue silently
-      }
-    }
-    router.push('/(tabs)/referrals');
-  };
-
-  const handleBannerPress = () => {
-    if (Platform.OS !== 'web') {
-      try {
-        Haptics.selectionAsync();
-      } catch (error) {
-        // Haptics not available, continue silently
-      }
-    }
-    router.push('/(tabs)/referrals');
-  };
-
-  return (
-    <View style={styles.referralCard}>
-      <TouchableOpacity onPress={handleBannerPress} activeOpacity={0.95}>
-        <LinearGradient
-          colors={['#0047FF', '#0021A5', '#FA4616']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          locations={[0, 0.7, 1]}
-          style={styles.referralGradient}
-        >
-          <View style={styles.referralContent}>
-            <View style={styles.referralTextContainer}>
-              <Text style={styles.referralTitle}>Get $10 for every referral!</Text>
-              <Text style={styles.referralSubtitle}>
-                Invite friends and earn credits when they complete their first task.
-              </Text>
-            </View>
-            
-            <View>
-              <TouchableOpacity 
-                style={styles.inviteButton} 
-                onPress={handleInvitePress}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.inviteButtonText}>Invite</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
-    </View>
-  );
-};
 
 // Enhanced Category Card with Better Animations
 const CategoryCard = ({ 
@@ -244,6 +160,7 @@ const CategoryCard = ({
 export default function HomeScreen() {
   const router = useRouter();
   const [selectingTaskId, setSelectingTaskId] = useState<string | null>(null);
+  const [showReferralBanner, setShowReferralBanner] = useState(true);
 
   const handleSelectTask = async (categoryId: string) => {
     if (selectingTaskId) return;
@@ -274,6 +191,21 @@ export default function HomeScreen() {
     setSelectingTaskId(null);
   };
 
+  const handleDismissBanner = () => {
+    setShowReferralBanner(false);
+  };
+
+  const handleInvitePress = () => {
+    if (Platform.OS !== 'web') {
+      try {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } catch (error) {
+        // Haptics not available, continue silently
+      }
+    }
+    router.push('/(tabs)/referrals');
+  };
+
   return (
     <View style={styles.container}>
       {/* Subtle Floating Particles */}
@@ -287,8 +219,44 @@ export default function HomeScreen() {
         bounces={true}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Enhanced Referral Banner */}
-        <AnimatedReferralsBanner />
+        {/* Compact Referral Banner */}
+        {showReferralBanner && (
+          <View style={styles.compactReferralCard}>
+            <LinearGradient
+              colors={['rgba(0, 71, 255, 0.85)', 'rgba(250, 70, 22, 0.85)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.compactReferralGradient}
+            >
+              <View style={styles.compactReferralContent}>
+                <View style={styles.compactReferralText}>
+                  <Text style={styles.compactReferralTitle} numberOfLines={2}>
+                    Get $10 for every referral!
+                  </Text>
+                  <Text style={styles.compactReferralSubtitle} numberOfLines={1}>
+                    Invite friends. Earn credits when they complete their first task.
+                  </Text>
+                </View>
+                
+                <TouchableOpacity 
+                  style={styles.compactInviteButton} 
+                  onPress={handleInvitePress}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.compactInviteButtonText}>Invite</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <TouchableOpacity 
+                style={styles.dismissButton} 
+                onPress={handleDismissBanner}
+                accessibilityLabel="Dismiss banner"
+              >
+                <X size={16} color="rgba(255, 255, 255, 0.8)" strokeWidth={2} />
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        )}
 
         {/* Nearby Tasks Widget */}
         <NearbyTasksWidget />
@@ -343,80 +311,86 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 120, // Extra space for tab bar
   },
-  
-  // Enhanced Referral Card
-  referralCard: {
+
+  // Compact Referral Card
+  compactReferralCard: {
     marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 32,
+    marginTop: 12,
+    marginBottom: 16,
     borderRadius: 20,
     shadowColor: Colors.semantic.cardShadow,
-    shadowOffset: { width: 0, height: 16 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 1,
-    shadowRadius: 24,
-    elevation: 20,
+    shadowRadius: 16,
+    elevation: 8,
     overflow: 'hidden',
+    position: 'relative',
   },
-  referralGradient: {
+  compactReferralGradient: {
     borderRadius: 20,
+    minHeight: 96,
+    maxHeight: 112,
   },
-  referralContent: {
+  compactReferralContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 24,
-    gap: 20,
+    padding: 16,
+    gap: 16,
+    paddingRight: 40, // Space for dismiss button
   },
-  referralTextContainer: {
+  compactReferralText: {
     flex: 1,
-    gap: 8,
+    gap: 6,
   },
-  referralTitle: {
-    fontSize: 20,
+  compactReferralTitle: {
+    fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
-    lineHeight: 24,
+    lineHeight: 22,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  referralSubtitle: {
-    fontSize: 14,
-    color: '#F1F5F9',
-    lineHeight: 20,
+  compactReferralSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 18,
     opacity: 0.95,
+    fontWeight: '500',
   },
-  inviteButton: {
-    backgroundColor: '#FA4616',
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    minHeight: 48,
+  compactInviteButton: {
+    backgroundColor: '#FF6B35',
+    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    minWidth: 84,
+    height: 36,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#FA4616',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 12,
-    position: 'relative',
-    overflow: 'hidden',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  shimmerOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: -120,
-    width: 120,
-    height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    transform: [{ skewX: '-20deg' }],
-  },
-  inviteButtonText: {
-    fontSize: 16,
+  compactInviteButtonText: {
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  dismissButton: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // Categories Section

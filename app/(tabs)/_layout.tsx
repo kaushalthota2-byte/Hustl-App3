@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Chrome as Home, List, MessageCircle, Gift, Zap } from 'lucide-react-native';
+import { Home, List, MessageCircle, Gift, Zap } from 'lucide-react-native';
 import { TouchableOpacity, View, StyleSheet, Platform, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -72,9 +72,9 @@ export default function TabLayout() {
             backgroundColor: '#FFFFFF',
             borderTopColor: Colors.semantic.dividerLight,
             borderTopWidth: 1,
-            height: 88 + insets.bottom,
+            height: 64 + insets.bottom,
             paddingBottom: insets.bottom,
-            paddingTop: 16,
+            paddingTop: 8,
             position: 'absolute',
             bottom: 0,
             left: 0,
@@ -87,34 +87,33 @@ export default function TabLayout() {
           },
           tabBarActiveTintColor: Colors.semantic.tabActive,
           tabBarInactiveTintColor: Colors.semantic.tabInactive,
-          tabBarLabelStyle: {
-            fontSize: 13,
-            fontWeight: '700',
-            marginTop: 10,
-            letterSpacing: 0.2,
-          },
+          tabBarShowLabel: false,
         }}
       >
         <Tabs.Screen
           name="home"
           options={{
             title: 'Home',
-            tabBarIcon: ({ size, color }) => (
-              <Home size={size} color={color} strokeWidth={2} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.tabIconContainer}>
+                {focused && <View style={styles.activeIndicator} />}
+                <Home size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+              </View>
             ),
+            tabBarAccessibilityLabel: 'Home',
           }}
         />
         <Tabs.Screen
           name="tasks"
           options={{
             title: 'Tasks',
-            tabBarIcon: ({ size, color, focused }) => (
-              <List 
-                size={size} 
-                color={color} 
-                strokeWidth={focused ? 2.5 : 2}
-              />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.tabIconContainer}>
+                {focused && <View style={styles.activeIndicator} />}
+                <List size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+              </View>
             ),
+            tabBarAccessibilityLabel: 'Tasks',
           }}
         />
         <Tabs.Screen
@@ -122,24 +121,33 @@ export default function TabLayout() {
           options={{
             title: 'Post Task',
             tabBarButton: PostTaskTabButton,
+            tabBarAccessibilityLabel: 'Post a task',
           }}
         />
         <Tabs.Screen
           name="chats"
           options={{
             title: 'Chats',
-            tabBarIcon: ({ size, color }) => (
-              <MessageCircle size={size} color={color} strokeWidth={2} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.tabIconContainer}>
+                {focused && <View style={styles.activeIndicator} />}
+                <MessageCircle size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+              </View>
             ),
+            tabBarAccessibilityLabel: 'Chats',
           }}
         />
         <Tabs.Screen
           name="referrals"
           options={{
             title: 'Referrals',
-            tabBarIcon: ({ size, color }) => (
-              <Gift size={size} color={color} strokeWidth={2} />
+            tabBarIcon: ({ color, focused }) => (
+              <View style={styles.tabIconContainer}>
+                {focused && <View style={styles.activeIndicator} />}
+                <Gift size={24} color={color} strokeWidth={focused ? 2.5 : 2} />
+              </View>
             ),
+            tabBarAccessibilityLabel: 'Referrals',
           }}
         />
       </Tabs>
@@ -154,15 +162,13 @@ const styles = StyleSheet.create({
   postTaskTabContainer: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 4,
-    paddingBottom: 12,
+    justifyContent: 'center',
+    paddingTop: 0,
+    paddingBottom: 0,
   },
   postTaskButton: {
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    gap: 8,
-    height: '100%',
+    justifyContent: 'center',
   },
   postTaskIconContainer: {
     width: 56,
@@ -182,9 +188,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   postTaskLabel: {
-    fontSize: 13,
+    fontSize: 0, // Hide label
     fontWeight: '700',
     textAlign: 'center',
     letterSpacing: 0.2,
+    opacity: 0,
+  },
+  tabIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    position: 'relative',
+  },
+  activeIndicator: {
+    position: 'absolute',
+    top: -8,
+    width: 24,
+    height: 3,
+    backgroundColor: Colors.semantic.tabActive,
+    borderRadius: 2,
   },
 });
