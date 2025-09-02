@@ -18,7 +18,11 @@ module.exports = function (api) {
           },
           extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         },
-      ],
+      ]
     ],
+    ],
+    plugins: [
+      'react-native-reanimated/plugin',
+      [
   };
 };
